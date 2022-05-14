@@ -135,15 +135,6 @@ local CollectChests = Misc:CreateButton("Collect Chests", function()
 end)
 
 
-local AntiAfk = Misc:CreateToggle("Anti Afk", function(state)
-    if state then
-        ToggleAntiAfk = true
-    elseif not state then
-        ToggleAntiAfk = false
-    end
-end)
-
-
 local TpToWorld = Misc:CreateDropdown("Tp to World")
 for i, v in pairs(game:GetService("Workspace").Scripts.TeleportTo:GetChildren()) do
     if v.Name ~= "Easter" then
@@ -154,7 +145,16 @@ for i, v in pairs(game:GetService("Workspace").Scripts.TeleportTo:GetChildren())
 end
 
 
-local lineTpWorldWalkspeed = Misc:CreateLine()
+local lineTpToWorldAntiAfk = Misc:CreateLine()
+
+
+local AntiAfk = Misc:CreateToggle("Anti Afk", function(state)
+    if state then
+        ToggleAntiAfk = true
+    elseif not state then
+        ToggleAntiAfk = false
+    end
+end)
 
 
 local Walkspeed = Misc:CreateSlider("Walkspeed", 16, 150, function(arg)
