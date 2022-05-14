@@ -15,7 +15,7 @@ spawn(function()
         local highestnumberworldboost = 0
         local mapname = ""
         for i, v in pairs(game:GetService("Workspace").Maps:GetChildren()) do
-            if v.Name ~= "Others" then
+            if string.sub(v.Name, 1, 1) == "[" then
                 local name = string.gsub(v.Name, "%d", "")
                 local namedone = string.gsub(name, "%[%] ", "")
     
