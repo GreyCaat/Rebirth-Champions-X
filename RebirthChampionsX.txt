@@ -1,0 +1,162 @@
+getgenv().ToggleAntiAfk = false
+
+local VU = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:connect(function()
+    if ToggleAntiAfk == true then
+        VU:CaptureController()
+        VU:ClickButton2(Vector2.new())
+    end
+end)
+
+-------------------------
+
+spawn(function()
+    while wait(0.5) do
+        local highestnumberworldboost = 0
+        local mapname = ""
+        for i, v in pairs(game:GetService("Workspace").Maps:GetChildren()) do
+            if v.Name ~= "Others" then
+                local name = string.gsub(v.Name, "%d", "")
+                local namedone = string.gsub(name, "%[%] ", "")
+    
+                local numb = string.gsub(v.Name, "%a", "")
+                local numb1 = string.gsub(numb, "%[", "")
+                local numb2 = string.gsub(numb1, "%]", "")
+                local numbdone = tonumber(numb2)
+    
+                if numbdone >= highestnumberworldboost then
+                    highestnumberworldboost = numbdone
+                    mapname = namedone
+                end
+            end
+        end
+    
+        game:GetService("ReplicatedStorage").Events.WorldBoost:FireServer(mapname)
+    end
+end)
+
+-------------------------
+
+for i, v in pairs(game:GetService("Players").LocalPlayer.Passes:GetChildren()) do
+    v.Value = true
+end
+--------------------------------------------------
+
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/GreyCaat/GC-Library/main/Lib.txt", true))()
+
+local main = library:CreateMain("Rebirth Champions X", "also me hello")
+
+local AutoStuff = main:CreateTab("Auto-Stuff")
+local PetStuff = main:CreateTab("Pet-Stuff")
+local Misc = main:CreateTab("Misc.")
+
+-------------------------
+
+local loopAutoClick
+local AutoClick = AutoStuff:CreateToggle("Auto Click", function(state)
+    
+    if state == true then
+        loopAutoClick = game:GetService("RunService").RenderStepped:Connect(function()
+            game:GetService("ReplicatedStorage").Events.Click3:FireServer()
+        end)
+    elseif state == false then
+        loopAutoClick:Disconnect()
+    end
+
+end)
+
+
+local lineAutoClickAutoReb = AutoStuff:CreateLine()
+
+
+local TextAutoReb = AutoStuff:CreateLabel("Will choose highest rebirth you have unlocked")
+local loopAutoReb
+local AutoReb = AutoStuff:CreateToggle("Auto Rebirth", function(state)
+    
+    if state == true then
+        loopAutoReb = game:GetService("RunService").RenderStepped:Connect(function()
+            local optionsAutoReb = {}
+            for i, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.RebirthFrame.Top.Holder.ScrollingFrame:GetChildren()) do
+                if v.Name ~= "UIGridLayout" and v.Name ~= "TextLabel" then
+                    if v.Visible == true then
+                        local number = tonumber(v.Name)
+                        table.insert(optionsAutoReb, number)
+                    end
+                end
+            end
+
+            local highestnumber = 0
+            for i, v in pairs(optionsAutoReb) do
+                if v > highestnumber then
+                    highestnumber = v
+                end
+            end
+
+            game:GetService("ReplicatedStorage").Events.Rebirth:FireServer(highestnumber)
+        end)
+    elseif state == false then
+        loopAutoReb:Disconnect()
+    end
+
+end)
+
+-------------------------
+
+local loopCraftAll
+local AutoCraft = PetStuff:CreateToggle("Auto Craft All", function(state)
+
+    if state == true then
+        loopCraftAll = game:GetService("RunService").RenderStepped:Connect(function()
+            game:GetService("ReplicatedStorage").Functions.Request:InvokeServer("CraftAll",{})
+        end)
+    elseif state == false then
+        loopCraftAll:Disconnect()
+    end
+
+end)
+
+
+local TpToEgg = PetStuff:CreateDropdown("Tp to Egg")
+for i, v in pairs(game:GetService("Workspace").Scripts.Eggs:GetChildren()) do
+    local EggTpButton = TpToEgg:CreateDropdownButton(v.Name, function()
+        game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(v.inkubator.CFrame + Vector3.new(0, 14, 0))
+    end)
+end
+
+-------------------------
+
+local CollectChests = Misc:CreateButton("Collect Chests", function()
+    for i, v in pairs(game:GetService("Workspace").Scripts.Chests:GetDescendants()) do
+        if v.Name == "Touch" then
+            firetouchinterest(v, game.Players.LocalPlayer.Character.Head, 1)
+            firetouchinterest(v, game.Players.LocalPlayer.Character.Head, 0)
+        end
+    end
+end)
+
+
+local AntiAfk = Misc:CreateToggle("Anti Afk", function(state)
+    if state then
+        ToggleAntiAfk = true
+    elseif not state then
+        ToggleAntiAfk = false
+    end
+end)
+
+
+local TpToWorld = Misc:CreateDropdown("Tp to World")
+for i, v in pairs(game:GetService("Workspace").Scripts.TeleportTo:GetChildren()) do
+    if v.Name ~= "Easter" then
+        local WorldTpButton = TpToWorld:CreateDropdownButton(v.Name, function()
+            game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(v.CFrame + Vector3.new(0, 14, 0))
+        end)
+    end
+end
+
+
+local lineTpWorldWalkspeed = Misc:CreateLine()
+
+
+local Walkspeed = Misc:CreateSlider("Walkspeed", 16, 150, function(arg)
+	game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = arg
+end)
