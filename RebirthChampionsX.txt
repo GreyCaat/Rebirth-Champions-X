@@ -15,18 +15,21 @@ spawn(function()
         local highestnumberworldboost = 0
         local mapname = ""
         for i, v in pairs(game:GetService("Workspace").Maps:GetChildren()) do
-            if string.sub(v.Name, 1, 1) == "[" then
-                local name = string.gsub(v.Name, "%d", "")
-                local namedone = string.gsub(name, "%[%] ", "")
-    
-                local numb = string.gsub(v.Name, "%a", "")
-                local numb1 = string.gsub(numb, "%[", "")
-                local numb2 = string.gsub(numb1, "%]", "")
-                local numbdone = tonumber(numb2)
-    
-                if numbdone >= highestnumberworldboost then
-                    highestnumberworldboost = numbdone
-                    mapname = namedone
+            if string.find(v.Name, "SPACE") then
+            else
+                if string.sub(v.Name, 1, 1) == "[" then
+                    local name = string.gsub(v.Name, "%d", "")
+                    local namedone = string.gsub(name, "%[%] ", "")
+        
+                    local numb = string.gsub(v.Name, "%a", "")
+                    local numb1 = string.gsub(numb, "%[", "")
+                    local numb2 = string.gsub(numb1, "%]", "")
+                    local numbdone = tonumber(numb2)
+        
+                    if numbdone >= highestnumberworldboost then
+                        highestnumberworldboost = numbdone
+                        mapname = namedone
+                    end
                 end
             end
         end
