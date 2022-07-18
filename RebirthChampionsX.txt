@@ -12,35 +12,53 @@ end)
 
 spawn(function()
     while wait(0.5) do
-        local highestnumberworldboost = 0
-        local mapname = ""
-        for i, v in pairs(game:GetService("Workspace").Maps:GetChildren()) do
-            if string.find(v.Name, "SPACE") then
-            else
-                if string.sub(v.Name, 1, 1) == "[" then
-                    local name = string.gsub(v.Name, "%d", "")
-                    local namedone = string.gsub(name, "%[%] ", "")
-        
-                    local numb = string.gsub(v.Name, "%a", "")
-                    local numb1 = string.gsub(numb, "%[", "")
-                    local numb2 = string.gsub(numb1, "%]", "")
-                    local numbdone = tonumber(numb2)
-        
-                    if numbdone >= highestnumberworldboost then
-                        highestnumberworldboost = numbdone
-                        mapname = namedone
-                    end
-                end
+        local PortalsMod = require(game:GetService("ReplicatedStorage").Modules.Portals)
+
+        local HighestBoost = 0
+        local WorldName = ""
+        for i, v in pairs(PortalsMod.Main) do
+            if v.Boost > HighestBoost then
+                HighestBoost = v.Boost
+                WorldName = i
             end
         end
     
-        game:GetService("ReplicatedStorage").Events.WorldBoost:FireServer(mapname)
+        game:GetService("ReplicatedStorage").Events.WorldBoost:FireServer(WorldName)
     end
 end)
 
 -------------------------
 
-for i, v in pairs(game:GetService("Players").LocalPlayer.Passes:GetChildren()) do
+spawn(function()
+    game:GetService("RunService").Heartbeat:Connect(function()
+        for _, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.Error.Holder:GetChildren()) do
+            if v.Name == "Err" then
+                v:Destroy()
+            end
+        end
+    end)
+end)
+
+-------------------------
+
+local function CheckHighestRebirth()
+    local highestnumber = 0
+    for _, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.RebirthFrame.Top.Holder.ScrollingFrame:GetChildren()) do
+        if v.Name ~= "UIGridLayout" and v.Name ~= "TextLabel" then
+            if v.Visible == true then
+                local numb = tonumber(v.Name)
+                if numb > highestnumber then
+                    highestnumber = numb
+                end
+            end
+        end
+    end
+    return highestnumber
+end
+
+-------------------------
+
+for _, v in pairs(game:GetService("Players").LocalPlayer.Passes:GetChildren()) do
     if v.Name ~= "FasterEggOpen" then
         v.Value = true
     end
@@ -56,13 +74,15 @@ local AutoStuff = main:CreateTab("Auto-Stuff")
 local PetStuff = main:CreateTab("Pet-Stuff")
 local Misc = main:CreateTab("Misc.")
 
+
 -------------------------
+
 
 local loopAutoClick
 local AutoClick = AutoStuff:CreateToggle("Auto Click", function(state)
     
     if state == true then
-        loopAutoClick = game:GetService("RunService").RenderStepped:Connect(function()
+        loopAutoClick = game:GetService("RunService").Heartbeat:Connect(function()
             game:GetService("ReplicatedStorage").Events.Click3:FireServer()
         end)
     elseif state == false then
@@ -80,25 +100,10 @@ local loopAutoReb
 local AutoReb = AutoStuff:CreateToggle("Auto Rebirth", function(state)
     
     if state == true then
-        loopAutoReb = game:GetService("RunService").RenderStepped:Connect(function()
-            local optionsAutoReb = {}
-            for i, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.RebirthFrame.Top.Holder.ScrollingFrame:GetChildren()) do
-                if v.Name ~= "UIGridLayout" and v.Name ~= "TextLabel" then
-                    if v.Visible == true then
-                        local number = tonumber(v.Name)
-                        table.insert(optionsAutoReb, number)
-                    end
-                end
+        loopAutoReb = game:GetService("RunService").Heartbeat:Connect(function()
+            if CheckHighestRebirth() ~= 0 then
+                game:GetService("ReplicatedStorage").Events.Rebirth:FireServer(CheckHighestRebirth())
             end
-
-            local highestnumber = 0
-            for i, v in pairs(optionsAutoReb) do
-                if v > highestnumber then
-                    highestnumber = v
-                end
-            end
-
-            game:GetService("ReplicatedStorage").Events.Rebirth:FireServer(highestnumber)
         end)
     elseif state == false then
         loopAutoReb:Disconnect()
@@ -106,13 +111,15 @@ local AutoReb = AutoStuff:CreateToggle("Auto Rebirth", function(state)
 
 end)
 
+
 -------------------------
+
 
 local loopCraftAll
 local AutoCraft = PetStuff:CreateToggle("Auto Craft All", function(state)
 
     if state == true then
-        loopCraftAll = game:GetService("RunService").RenderStepped:Connect(function()
+        loopCraftAll = game:GetService("RunService").Heartbeat:Connect(function()
             game:GetService("ReplicatedStorage").Functions.Request:InvokeServer("CraftAll",{})
         end)
     elseif state == false then
@@ -121,32 +128,13 @@ local AutoCraft = PetStuff:CreateToggle("Auto Craft All", function(state)
 
 end)
 
+
 local AutoEquipBest = PetStuff:CreateToggle("Auto Equip Best", function(state)
 
     if state == true then
-        repeat wait(10)
-            for i, v in pairs(game:GetService("Players").LocalPlayer.Pets:GetChildren()) do
-                if v.Equipped.Value == true then
-                    game:GetService("ReplicatedStorage").Functions.Request:InvokeServer("Unequip",{["PetID"] = tostring(v.Name)})
-                end
-            end
-            
-            local MaxEquip = tonumber(string.sub(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.PetsFrame.Top.Holder.Stats.PetEquip.Label.Text, 3, -1))
-            local pets = game.Players.LocalPlayer.Pets:GetChildren()
-            
-            table.sort(pets, function(p1, p2)
-                local A = p1.Multiplier.Value
-                local B = p2.Multiplier.Value
-                return A > B
-            end)
-            
-            if #pets == 0 then
-                return print("no pets")
-            end
-            
-            for i = 1, math.min(#pets, MaxEquip) do
-                local pet = pets[i]
-                game:GetService("ReplicatedStorage").Functions.Request:InvokeServer("Equip",{["PetID"] = tostring(pet)})
+        repeat wait(1)
+            for _, v in pairs(getconnections(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.PetsFrame.Additional.EquipBest.Click.MouseButton1Up)) do
+                v:Fire()
             end
         until state == false
     elseif state == false then
@@ -156,16 +144,45 @@ end)
 
 
 local TpToEgg = PetStuff:CreateDropdown("Tp to Egg")
-for i, v in pairs(game:GetService("Workspace").Scripts.Eggs:GetChildren()) do
+for _, v in pairs(game:GetService("Workspace").Scripts.Eggs:GetChildren()) do
     local EggTpButton = TpToEgg:CreateDropdownButton(v.Name, function()
         game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(v.inkubator.CFrame + Vector3.new(0, 14, 0))
     end)
 end
 
+
 -------------------------
 
+
+local UnlockRebirthStep = Misc:CreateButton("Unlock next Rebirth", function()
+    local NextRebirth = CheckHighestRebirth() + 1
+
+    local Button = game:GetService("Players").LocalPlayer.PlayerGui.MainUI.RebirthFrame.Top.Holder.ScrollingFrame:FindFirstChild(NextRebirth)
+
+    if Button then
+        Button.Visible = true
+    else
+        warn("Rebirth step not found / Highest Rebirth step reached")
+    end
+end)
+
+
+local LockRebirthStep = Misc:CreateButton("Remove one Rebirth step", function()
+    local Button = game:GetService("Players").LocalPlayer.PlayerGui.MainUI.RebirthFrame.Top.Holder.ScrollingFrame:FindFirstChild(CheckHighestRebirth())
+
+    if Button then
+        Button.Visible = false
+    else
+        warn("Rebirth step not found / Lowest Rebirth step reached")
+    end
+end)
+
+-------------------------------------
+local LockCollect = Misc:CreateLine()
+-------------------------------------
+
 local CollectChests = Misc:CreateButton("Collect Chests", function()
-    for i, v in pairs(game:GetService("Workspace").Scripts.Chests:GetDescendants()) do
+    for _, v in pairs(game:GetService("Workspace").Scripts.Chests:GetDescendants()) do
         if v.Name == "Touch" then
             firetouchinterest(v, game.Players.LocalPlayer.Character.Head, 1)
             firetouchinterest(v, game.Players.LocalPlayer.Character.Head, 0)
@@ -175,7 +192,7 @@ end)
 
 
 local TpToWorld = Misc:CreateDropdown("Tp to World")
-for i, v in pairs(game:GetService("Workspace").Scripts.TeleportTo:GetChildren()) do
+for _, v in pairs(game:GetService("Workspace").Scripts.TeleportTo:GetChildren()) do
     if v.Name ~= "Easter" then
         local WorldTpButton = TpToWorld:CreateDropdownButton(v.Name, function()
             game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(v.CFrame + Vector3.new(0, 14, 0))
@@ -183,9 +200,9 @@ for i, v in pairs(game:GetService("Workspace").Scripts.TeleportTo:GetChildren())
     end
 end
 
-
+-------------------------------------
 local lineTpToWorldAntiAfk = Misc:CreateLine()
-
+-------------------------------------
 
 local AntiAfk = Misc:CreateToggle("Anti Afk", function(state)
     if state then
